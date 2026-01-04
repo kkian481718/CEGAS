@@ -1,4 +1,5 @@
 import Link from "next/link";
+import packageJson from "../package.json";
 
 export default function HomePage() {
   return (
@@ -7,11 +8,13 @@ export default function HomePage() {
         {/* Logo 區塊 */}
         <div className="flex items-center justify-center space-x-3">
           <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center">
-            <span className="text-3xl font-bold text-primary-foreground">C</span>
+            <span className="text-3xl font-bold text-primary-foreground">
+              C
+            </span>
           </div>
           <h1 className="text-4xl font-bold tracking-tight">CEGAS</h1>
         </div>
-        
+
         {/* 標題 */}
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-muted-foreground">
@@ -25,21 +28,31 @@ export default function HomePage() {
         {/* 功能特色 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-3xl">
           <div className="p-4 border rounded-lg bg-card">
-            <div className="text-2xl mb-2">📤</div>
+            <div className="text-2xl mb-2" role="img" aria-label="Upload icon">
+              📤
+            </div>
             <h3 className="font-semibold">批量上傳</h3>
             <p className="text-sm text-muted-foreground">
               一次上傳所有考卷，自動分配給助教
             </p>
           </div>
           <div className="p-4 border rounded-lg bg-card">
-            <div className="text-2xl mb-2">🔍</div>
+            <div
+              className="text-2xl mb-2"
+              role="img"
+              aria-label="Analysis icon"
+            >
+              🔍
+            </div>
             <h3 className="font-semibold">自動分析</h3>
             <p className="text-sm text-muted-foreground">
               Cppcheck 自動偵測程式碼錯誤
             </p>
           </div>
           <div className="p-4 border rounded-lg bg-card">
-            <div className="text-2xl mb-2">✏️</div>
+            <div className="text-2xl mb-2" role="img" aria-label="Grading icon">
+              ✏️
+            </div>
             <h3 className="font-semibold">線上批改</h3>
             <p className="text-sm text-muted-foreground">
               DOCX 預覽、畫記、評分一站完成
@@ -59,7 +72,7 @@ export default function HomePage() {
 
         {/* 版本資訊 */}
         <p className="text-xs text-muted-foreground mt-8">
-          版本 0.1.0 | 專為教育用途設計
+          版本 {packageJson.version} | 專為教育用途設計
         </p>
       </div>
     </main>

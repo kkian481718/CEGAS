@@ -948,7 +948,7 @@ UPDATE assignments SET status = 'archived' WHERE semester < '113-1';
 
 ### 12.2 多重匹配策略
 
-` ypescript
+```typescript
 // lib/parser.ts
 
 // 國字數字對照表
@@ -962,7 +962,7 @@ const questionPatterns = [
 /^第([一二三四五六七八九十\d]+)題/, // 「第 X 題」格式 (最可靠)
 /^[Qq](\d+)/, // Q1, q1 格式
 /^[（(](\d+)[)）]/, // (1) 或 （1）括號格式
-/^(\d+)\s\*[.。、:：\-]/, // 數字 + 各種標點
+/^(\d+)\s*[.。、:：\-]/, // 數字 + 各種標點
 /^([一二三四五六七八九十]+)[、.。]/, // 國字數字 + 頓號
 ];
 

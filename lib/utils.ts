@@ -46,7 +46,7 @@ export function parseStudentFilename(filename: string): {
 } | null {
   const match = filename.match(/(.+)_(\d+)_(.+)\.docx$/i);
   if (!match) return null;
-  
+
   return {
     className: match[1],
     studentId: match[2],
@@ -58,6 +58,15 @@ export function parseStudentFilename(filename: string): {
  * 計算批改進度百分比
  */
 export function calculateProgress(completed: number, total: number): number {
+  if (completed < 0) {
+    throw new Error("Completed count cannot be negative");
+  }
+  if (total < 0) {
+    throw new Error("Total count cannot be negative");
+  }
+  if (completed > total) {
+    throw new Error("Completed count cannot exceed total count");
+  }
   if (total === 0) return 0;
   return Math.round((completed / total) * 100);
 }

@@ -1,6 +1,6 @@
 # CEGAS - C++ 考卷自動化批改系統
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
 
@@ -15,13 +15,13 @@
 
 ## 🛠️ 技術棧
 
-| 模組 | 技術 | 用途 |
-|:-----|:-----|:-----|
-| 全棧應用 | **Next.js 14** (App Router) | 前端 + API Routes |
-| 資料庫 + Auth | **Supabase** | PostgreSQL + 檔案儲存 + 使用者驗證 |
-| UI 元件 | **shadcn/ui** + **Tailwind CSS** | 現代化介面 |
-| Cppcheck 分析 | **GitHub Actions** | 執行系統級工具 |
-| 部署 | **Vercel** | 無伺服器部署 |
+| 模組          | 技術                             | 用途                               |
+| :------------ | :------------------------------- | :--------------------------------- |
+| 全棧應用      | **Next.js 15** (App Router)      | 前端 + API Routes                  |
+| 資料庫 + Auth | **Supabase**                     | PostgreSQL + 檔案儲存 + 使用者驗證 |
+| UI 元件       | **shadcn/ui** + **Tailwind CSS** | 現代化介面                         |
+| Cppcheck 分析 | **GitHub Actions**               | 執行系統級工具                     |
+| 部署          | **Vercel**                       | 無伺服器部署                       |
 
 ## 🚀 快速開始
 
@@ -64,10 +64,10 @@ CEGAS/
 
 ## 👥 使用者角色
 
-| 角色 | 權限 |
-|:-----|:-----|
+| 角色      | 權限                                       |
+| :-------- | :----------------------------------------- |
 | **admin** | 管理助教、建立考試、批量上傳、查看所有成績 |
-| **ta** | 查看/批改分配給自己的考卷、輸入成績 |
+| **ta**    | 查看/批改分配給自己的考卷、輸入成績        |
 
 ## 📄 授權
 
