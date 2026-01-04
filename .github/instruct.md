@@ -934,60 +934,61 @@ UPDATE assignments SET status = 'archived' WHERE semester < '113-1';
 
 學生的題號寫法非常多樣，觀察到的模式包括：
 
-| 寫法範例 | 說明 |
-| :--- | :--- |
-| `1.` | 數字 + 英文句點 |
-| `1。` | 數字 + 中文句號 |
-| `1、` | 數字 + 頓號 |
-| `1:` / `1：` | 數字 + 冒號 |
-| `第一題` / `第1題` | 「第X題」格式 |
-| `Q1` / `q1` | 英文 Q + 數字 |
-| `(1)` / `（1）` | 括號包數字 |
-| `一、` / `二、` | 國字數字 |
-| `1. 我忘了` | 題號後接非程式碼文字 |
+| 寫法範例           | 說明                 |
+| :----------------- | :------------------- |
+| `1.`               | 數字 + 英文句點      |
+| `1。`              | 數字 + 中文句號      |
+| `1、`              | 數字 + 頓號          |
+| `1:` / `1：`       | 數字 + 冒號          |
+| `第一題` / `第1題` | 「第 X 題」格式      |
+| `Q1` / `q1`        | 英文 Q + 數字        |
+| `(1)` / `（1）`    | 括號包數字           |
+| `一、` / `二、`    | 國字數字             |
+| `1. 我忘了`        | 題號後接非程式碼文字 |
 
 ### 12.2 多重匹配策略
 
-`	ypescript
+```typescript
 // lib/parser.ts
 
 // 國字數字對照表
 const chineseNumbers: Record<string, number> = {
-  '一': 1, '二': 2, '三': 3, '四': 4, '五': 5,
-  '六': 6, '七': 7, '八': 8, '九': 9, '十': 10
+'一': 1, '二': 2, '三': 3, '四': 4, '五': 5,
+'六': 6, '七': 7, '八': 8, '九': 9, '十': 10
 };
 
 // 題號匹配模式 (依優先順序)
 const questionPatterns = [
-  /^第([一二三四五六七八九十\d]+)題/,  // 「第X題」格式 (最可靠)
-  /^[Qq](\d+)/,                          // Q1, q1 格式
-  /^[（(](\d+)[)）]/,                    // (1) 或 （1）括號格式
-  /^(\d+)\s*[.。、:：\-]/,               // 數字 + 各種標點
-  /^([一二三四五六七八九十]+)[、.。]/,   // 國字數字 + 頓號
+/^第([一二三四五六七八九十\d]+)題/, // 「第 X 題」格式 (最可靠)
+/^[Qq](\d+)/, // Q1, q1 格式
+/^[（(](\d+)[)）]/, // (1) 或 （1）括號格式
+/^(\d+)\s*[.。、:：\-]/, // 數字 + 各種標點
+/^([一二三四五六七八九十]+)[、.。]/, // 國字數字 + 頓號
 ];
 
 interface ParsedQuestion {
-  questionNumber: number;
-  content: string;
-  confidence: 'high' | 'medium' | 'low';
+questionNumber: number;
+content: string;
+confidence: 'high' | 'medium' | 'low';
 }
 
 export function parseQuestionNumber(line: string): { num: number; confidence: string } | null {
-  const trimmed = line.trim();
-  
-  for (const pattern of questionPatterns) {
-    const match = trimmed.match(pattern);
-    if (match) {
-      const rawNum = match[1];
-      const num = chineseNumbers[rawNum] ?? parseInt(rawNum);
-      
+const trimmed = line.trim();
+
+for (const pattern of questionPatterns) {
+const match = trimmed.match(pattern);
+if (match) {
+const rawNum = match[1];
+const num = chineseNumbers[rawNum] ?? parseInt(rawNum);
+
       if (!isNaN(num) && num >= 1 && num <= 20) {
         const confidence = pattern.source.includes('第') ? 'high' : 'medium';
         return { num, confidence };
       }
     }
-  }
-  return null;
+
+}
+return null;
 }
 `
 
@@ -997,12 +998,12 @@ export function parseQuestionNumber(line: string): { num: number; confidence: st
 
 `
 
-   題目解析警告                                            
+題目解析警告
 
-  學號 411335012 的考卷解析有問題：                          
-   預期 5 題，但解析出 4 題                                 
-   第 3 題解析可信度較低                                    
-                                       [查看原稿] [手動修正]  
+學號 411335012 的考卷解析有問題：  
+ 預期 5 題，但解析出 4 題  
+ 第 3 題解析可信度較低  
+ [查看原稿] [手動修正]
 
 `
 
@@ -1012,49 +1013,46 @@ export function parseQuestionNumber(line: string): { num: number; confidence: st
 
 ### 13.1 問題分析
 
-| 指標 | 原方案 (逐一觸發) | 優化方案 (批量處理) |
-| :--- | :--- | :--- |
-| 冷啟動次數 | 60 次 | 1 次 |
-| 總耗時 (60份) | ~30 分鐘 | ~3 分鐘 |
-| Actions 分鐘數 | ~60 分鐘 | ~5 分鐘 |
+| 指標           | 原方案 (逐一觸發) | 優化方案 (批量處理) |
+| :------------- | :---------------- | :------------------ |
+| 冷啟動次數     | 60 次             | 1 次                |
+| 總耗時 (60 份) | ~30 分鐘          | ~3 分鐘             |
+| Actions 分鐘數 | ~60 分鐘          | ~5 分鐘             |
 
 ### 13.2 優化後的工作流程
 
 `yaml
+
 # .github/workflows/cppcheck-batch.yml
+
 name: Cppcheck Batch Analysis
 
 on:
-  repository_dispatch:
-    types: [analyze-batch]
-  schedule:
-    - cron: '0 * * * *'  # 每小時檢查一次待處理考卷
+repository_dispatch:
+types: [analyze-batch]
+schedule: - cron: '0 \* \* \* \*' # 每小時檢查一次待處理考卷
 
 jobs:
-  analyze:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y cppcheck
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install @supabase/supabase-js
-      - run: node scripts/analyze-batch.js
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+analyze:
+runs-on: ubuntu-latest
+steps: - uses: actions/checkout@v4 - run: sudo apt-get update && sudo apt-get install -y cppcheck - uses: actions/setup-node@v4
+with:
+node-version: '20' - run: npm install @supabase/supabase-js - run: node scripts/analyze-batch.js
+env:
+SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 `
 
 ### 13.3 批量處理流程
 
 `
+
 1. 查詢所有 status='pending' 的 submissions
 2. 批量更新為 status='analyzing'
 3. 逐一執行 cppcheck 分析
 4. 成功則更新為 status='analyzed'
 5. 失敗則改回 status='pending' (下次重試)
-`
+   `
 
 ---
 
@@ -1064,41 +1062,42 @@ jobs:
 
 `
 main (保護分支，只接受 PR)
-  
-   develop (開發主分支)
-       
+
+develop (開發主分支)
+
         feature/auth-system       開發者 A
-       
+
         feature/grading-system    開發者 B
+
 `
 
 ### 14.2 工作分配
 
-####  開發者 A：基礎建設 + 使用者系統 (~6.5 天)
+#### 開發者 A：基礎建設 + 使用者系統 (~6.5 天)
 
-| 任務 | 分支名稱 |
-| :--- | :--- |
-| 專案初始化 (Next.js + Tailwind + shadcn/ui) | `feat/project-init` |
-| Supabase 設定 + 資料表建立 | `feat/database-setup` |
-| 登入/登出功能 | `feat/auth-login` |
-| Middleware 權限控制 | `feat/auth-middleware` |
-| 助教管理頁面 (CRUD) | `feat/user-management` |
-| 考試/作業建立頁面 | `feat/assignment-crud` |
-| GitHub Actions 工作流程 | `feat/cppcheck-actions` |
-| 題號解析邏輯 | `feat/question-parser` |
+| 任務                                        | 分支名稱                |
+| :------------------------------------------ | :---------------------- |
+| 專案初始化 (Next.js + Tailwind + shadcn/ui) | `feat/project-init`     |
+| Supabase 設定 + 資料表建立                  | `feat/database-setup`   |
+| 登入/登出功能                               | `feat/auth-login`       |
+| Middleware 權限控制                         | `feat/auth-middleware`  |
+| 助教管理頁面 (CRUD)                         | `feat/user-management`  |
+| 考試/作業建立頁面                           | `feat/assignment-crud`  |
+| GitHub Actions 工作流程                     | `feat/cppcheck-actions` |
+| 題號解析邏輯                                | `feat/question-parser`  |
 
-####  開發者 B：核心功能 + 批改介面 (~8.5 天)
+#### 開發者 B：核心功能 + 批改介面 (~8.5 天)
 
-| 任務 | 分支名稱 |
-| :--- | :--- |
-| Dashboard Layout + 側邊欄 | `feat/dashboard-layout` |
-| 批量上傳頁面 (UI) | `feat/bulk-upload-ui` |
-| 上傳 API + 分配演算法 | `feat/upload-api` |
-| TA 儀表板 (待批改清單) | `feat/ta-dashboard` |
-| DOCX 預覽元件 | `feat/docx-viewer` |
-| 批改介面 (雙欄佈局) | `feat/grading-interface` |
-| 評分表單 + 儲存 | `feat/grading-form` |
-| 畫記功能 (Fabric.js) | `feat/annotation-canvas` |
+| 任務                      | 分支名稱                 |
+| :------------------------ | :----------------------- |
+| Dashboard Layout + 側邊欄 | `feat/dashboard-layout`  |
+| 批量上傳頁面 (UI)         | `feat/bulk-upload-ui`    |
+| 上傳 API + 分配演算法     | `feat/upload-api`        |
+| TA 儀表板 (待批改清單)    | `feat/ta-dashboard`      |
+| DOCX 預覽元件             | `feat/docx-viewer`       |
+| 批改介面 (雙欄佈局)       | `feat/grading-interface` |
+| 評分表單 + 儲存           | `feat/grading-form`      |
+| 畫記功能 (Fabric.js)      | `feat/annotation-canvas` |
 
 ### 14.3 開發時間軸
 
@@ -1106,78 +1105,358 @@ main (保護分支，只接受 PR)
 Week 1
 
 A: [專案初始化][Supabase][登入][Middleware]
-B: [等 A 完成初始化...][Dashboard][上傳UI]
-         Day 2 後 B 可以開始
+B: [等 A 完成初始化...][Dashboard][上傳 UI]
+Day 2 後 B 可以開始
 
 Week 2
 
 A: [助教管理][考試建立][Actions]
-B: [上傳API][儀表板][DOCX預覽]
+B: [上傳 API][儀表板][DOCX 預覽]
 
 Week 3
 
 A: [題號解析][測試]
 B: [批改介面][評分][畫記]
-               Day 14 合併  部署
+Day 14 合併 部署
 `
 
 ### 14.4 檔案分工 (避免衝突)
 
 `
 app/
- (auth)/           A 負責
- (dashboard)/
-    users/        A
-    assignments/  A
-    upload/       B
-    my-tasks/     B
-    grade/        B
- api/
-     auth/         A
-     users/        A
-     upload/       B
-     analyze/      A
+(auth)/ A 負責
+(dashboard)/
+users/ A
+assignments/ A
+upload/ B
+my-tasks/ B
+grade/ B
+api/
+auth/ A
+users/ A
+upload/ B
+analyze/ A
 
 components/
- auth/             A
- dashboard/        B
- grading/          B
+auth/ A
+dashboard/ B
+grading/ B
 
 lib/
- supabase/         A
- parser.ts         A
- distribution.ts   B
+supabase/ A
+parser.ts A
+distribution.ts B
 `
 
 ### 14.5 Git 指令速查
 
 `ash
+
 # A 第一天：建立 develop 分支
+
 git checkout -b develop
 git push -u origin develop
 
 # 建立功能分支
+
 git checkout -b feat/project-init
 
 # 開發完成
+
 git add .
 git commit -m "feat: 初始化專案"
 git push -u origin feat/project-init
-#  發 PR 到 develop
+
+# 發 PR 到 develop
 
 # B 第二天：同步並開始
+
 git checkout develop
 git pull
 git checkout -b feat/dashboard-layout
 
 # 如果 develop 有更新
+
 git fetch origin
 git rebase origin/develop
 `
 
-### 14.6 每日同步 (10分鐘)
+---
 
-1. 昨天完成什麼？
-2. 今天要做什麼？
-3. 有被 block 嗎？
-4. 需要對方配合什麼？
+## 15. DOCX 解析完整性驗證 (Parse Integrity Validation)
+
+### 15.1 問題分析
+
+從 DOCX 拆分題目時容易遺漏內容，需要建立多道防線確保解析完整：
+
+| 防線       | 機制             | 作用                 |
+| :--------- | :--------------- | :------------------- |
+| **第一道** | 完整度計算       | 自動偵測字元遺漏     |
+| **第二道** | `unmatched` 收集 | 捕獲所有無法歸類內容 |
+| **第三道** | 原稿對照 UI      | 人工最終確認         |
+
+### 15.2 解析結果資料結構
+
+```typescript
+// lib/parser.ts
+
+interface ParseResult {
+  questions: Map<number, string>; // 題號 -> 內容
+  unmatched: string[]; // 無法歸類的內容
+  originalLength: number; // 原始總字元數
+  parsedLength: number; // 解析後總字元數
+  completeness: number; // 完整度百分比
+}
+
+export function parseDocxContent(
+  fullText: string,
+  expectedQuestions: number
+): ParseResult {
+  const lines = fullText.split("\n");
+  const questions = new Map<number, string>();
+  const unmatched: string[] = [];
+
+  let currentQuestion: number | null = null;
+  let currentContent: string[] = [];
+
+  for (const line of lines) {
+    const questionMatch = parseQuestionNumber(line);
+
+    if (questionMatch) {
+      // 儲存前一題
+      if (currentQuestion !== null) {
+        questions.set(currentQuestion, currentContent.join("\n"));
+      }
+      currentQuestion = questionMatch.num;
+      currentContent = [line];
+    } else if (currentQuestion !== null) {
+      // 屬於當前題目
+      currentContent.push(line);
+    } else {
+      // 無法歸類 (出現在任何題號之前的內容)
+      if (line.trim()) {
+        unmatched.push(line);
+      }
+    }
+  }
+
+  // 儲存最後一題
+  if (currentQuestion !== null) {
+    questions.set(currentQuestion, currentContent.join("\n"));
+  }
+
+  // 計算完整度
+  const parsedLength =
+    [...questions.values()].join("").length + unmatched.join("").length;
+  const originalLength = fullText.replace(/\s/g, "").length;
+  const completeness =
+    originalLength > 0 ? (parsedLength / originalLength) * 100 : 0;
+
+  return {
+    questions,
+    unmatched,
+    originalLength,
+    parsedLength,
+    completeness,
+  };
+}
+```
+
+### 15.3 資料庫欄位擴充
+
+```sql
+-- 在 submissions 表增加解析驗證欄位
+ALTER TABLE submissions ADD COLUMN parse_completeness DECIMAL(5,2);
+ALTER TABLE submissions ADD COLUMN unmatched_content TEXT;
+ALTER TABLE submissions ADD COLUMN parse_warnings JSONB;
+
+-- parse_warnings 範例結構：
+-- {
+--   "missing_questions": [3],
+--   "low_confidence_questions": [2, 5],
+--   "unmatched_char_count": 32
+-- }
+```
+
+### 15.4 解析結果確認介面
+
+```
+
+   解析結果：411335012 王小明
+
+
+   完整度：98.5%  (建議 > 95% 才可接受)
+
+   解析統計：
+
+   題號      字元數      狀態
+
+   第 1 題   523          正常
+   第 2 題   412          正常
+   第 3 題   0            未找到 (可能未作答或格式異常)
+   第 4 題   687          正常
+   第 5 題   445          正常
+
+
+   未歸類內容 (32 字元)：
+
+   "我的學號是411335012，以下是我的答案..."
+
+
+                    [查看原稿對照] [手動調整] [確認無誤]
+
+```
+
+### 15.5 批量上傳驗證報告
+
+```
+
+   批量上傳報告：113-1 期中考 (60 份)
+
+
+   完美解析：52 份 (完整度 > 98%)
+   需人工確認：6 份 (完整度 90-98%)
+   解析異常：2 份 (完整度 < 90%)
+
+  異常清單：
+   411335023 張 - 完整度 85%，缺少第2題
+   411335047 李 - 完整度 72%，題號格式異常
+
+                          [下載報告] [處理異常] [繼續分配]
+
+```
+
+### 15.6 三欄對照批改介面
+
+批改時提供原稿對照功能，讓助教隨時檢查解析是否正確：
+
+```
+
+    原始 DOCX      第 3 題解析     Cppcheck
+
+
+  [完整原稿滾動]    [解析出的程式碼]   [錯誤列表]
+
+  (當前高亮第3題
+   對應區塊)
+
+
+```
+
+### 15.7 驗證元件實作
+
+```typescript
+// components/upload/ParseValidation.tsx
+"use client";
+
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface ParseValidationProps {
+  submissions: {
+    studentId: string;
+    studentName: string;
+    completeness: number;
+    questionStats: { num: number; charCount: number; confidence: string }[];
+    unmatchedContent: string[];
+  }[];
+  expectedQuestions: number;
+  onConfirm: () => void;
+  onReview: (studentId: string) => void;
+}
+
+export function ParseValidation({
+  submissions,
+  expectedQuestions,
+  onConfirm,
+  onReview,
+}: ParseValidationProps) {
+  const perfect = submissions.filter((s) => s.completeness >= 98);
+  const needsReview = submissions.filter(
+    (s) => s.completeness >= 90 && s.completeness < 98
+  );
+  const hasIssues = submissions.filter((s) => s.completeness < 90);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle> 解析驗證報告</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* 統計摘要 */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="p-4 bg-green-50 rounded-lg text-center">
+            <div className="text-2xl font-bold text-green-600">
+              {perfect.length}
+            </div>
+            <div className="text-sm text-green-700"> 完美解析</div>
+          </div>
+          <div className="p-4 bg-yellow-50 rounded-lg text-center">
+            <div className="text-2xl font-bold text-yellow-600">
+              {needsReview.length}
+            </div>
+            <div className="text-sm text-yellow-700"> 需確認</div>
+          </div>
+          <div className="p-4 bg-red-50 rounded-lg text-center">
+            <div className="text-2xl font-bold text-red-600">
+              {hasIssues.length}
+            </div>
+            <div className="text-sm text-red-700"> 異常</div>
+          </div>
+        </div>
+
+        {/* 異常清單 */}
+        {hasIssues.length > 0 && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              <div className="font-semibold mb-2">以下考卷需要人工處理：</div>
+              <ul className="space-y-1">
+                {hasIssues.map((s) => (
+                  <li
+                    key={s.studentId}
+                    className="flex justify-between items-center"
+                  >
+                    <span>
+                      {s.studentId} {s.studentName} - 完整度{" "}
+                      {s.completeness.toFixed(1)}%
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onReview(s.studentId)}
+                    >
+                      查看
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* 操作按鈕 */}
+        <div className="flex justify-end gap-2">
+          <Button variant="outline">下載報告</Button>
+          <Button onClick={onConfirm} disabled={hasIssues.length > 0}>
+            {hasIssues.length > 0 ? "請先處理異常" : "確認並繼續分配"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### 15.8 防遺漏檢查清單
+
+在解析完成後，系統自動執行以下檢查：
+
+| 檢查項目   | 觸發條件             | 處理方式            |
+| :--------- | :------------------- | :------------------ |
+| 題數不符   | 解析題數 ≠ 預期題數  | 警告 + 人工確認     |
+| 完整度過低 | completeness < 90%   | 阻擋 + 必須人工處理 |
+| 空白題目   | 某題 charCount = 0   | 警告 (可能未作答)   |
+| 低信心度   | confidence = 'low'   | 標記 + 建議檢查     |
+| 未歸類內容 | unmatched.length > 0 | 顯示內容 + 手動歸類 |
