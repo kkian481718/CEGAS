@@ -831,8 +831,8 @@ Settings → Secrets → Actions：
 | :------------------------------------------ | :---------------------- | :--- |
 | 專案初始化 (Next.js + Tailwind + shadcn/ui) | `feat/project-init`     | ✅   |
 | Supabase 設定 + 資料表建立                  | `feat/database-setup`   | ✅   |
-| 登入/登出功能                               | `feat/auth-login`       | ⬜   |
-| Middleware 權限控制                         | `feat/auth-middleware`  | ⬜   |
+| 登入/登出功能                               | `feat/auth-login`       | ✅   |
+| Middleware 權限控制                         | `feat/auth-middleware`  | ✅   |
 | 助教管理頁面 (CRUD)                         | `feat/user-management`  | ⬜   |
 | 考試/作業建立頁面                           | `feat/assignment-crud`  | ⬜   |
 | GitHub Actions 工作流程                     | `feat/cppcheck-actions` | ⬜   |
