@@ -816,7 +816,7 @@ Settings → Secrets → Actions：
 | :---------- | :-------------------------------------------- | :------- | :--- |
 | **Phase 1** | 基礎建設：Next.js + Supabase + Auth           | 1 天     | ✅   |
 | **Phase 2** | 使用者系統：登入/登出 + 角色權限 + Middleware | 1 天     | ✅   |
-| **Phase 3** | Admin 功能：助教管理 + 考試建立               | 1 天     | ⬜   |
+| **Phase 3** | Admin 功能：助教管理 + 考試建立               | 1 天     | ✅   |
 | **Phase 4** | 批量上傳：拖曳上傳 + 助教分配                 | 1.5 天   | ⬜   |
 | **Phase 5** | TA 儀表板：待批改清單 + 統計                  | 1 天     | ⬜   |
 | **Phase 6** | 批改介面：DOCX 預覽 + 評分表單                | 2 天     | ⬜   |
@@ -835,7 +835,7 @@ Settings → Secrets → Actions：
 | 登入/登出功能                               | `feat/auth-login`       | ✅   |
 | Middleware 權限控制                         | `feat/auth-middleware`  | ✅   |
 | 助教管理頁面 (CRUD)                         | `feat/user-management`  | ✅   |
-| 考試/作業建立頁面                           | `feat/assignment-crud`  | ⬜   |
+| 考試/作業建立頁面                           | `feat/assignment-crud`  | ✅   |
 | GitHub Actions 工作流程                     | `feat/cppcheck-actions` | ⬜   |
 | 題號解析邏輯                                | `feat/question-parser`  | ⬜   |
 
@@ -851,6 +851,79 @@ Settings → Secrets → Actions：
 | 批改介面 (雙欄佈局)       | `feat/grading-interface` | ⬜   |
 | 評分表單 + 儲存           | `feat/grading-form`      | ⬜   |
 | 畫記功能 (Fabric.js)      | `feat/annotation-canvas` | ⬜   |
+
+### 10.3 剩餘工作清單 (Remaining TODO)
+
+> **最後更新：** 2026-01-05
+
+以下為尚未完成的功能模組，依優先順序排列：
+
+---
+
+#### 🔲 Phase 4：批量上傳 (`feat/bulk-upload-ui` + `feat/upload-api`)
+
+| 項目              | 說明                                 | 檔案路徑                             |
+| :---------------- | :----------------------------------- | :----------------------------------- |
+| 批量上傳頁面      | 拖曳上傳 DOCX、檔案預覽、進度條      | `app/(dashboard)/upload/page.tsx`    |
+| BulkUploader 元件 | Drag & Drop 區域、多檔選擇           | `components/upload/BulkUploader.tsx` |
+| TASelector 元件   | 勾選參與批改的助教列表               | `components/upload/TASelector.tsx`   |
+| 上傳 API          | 接收 FormData、存入 Supabase Storage | `app/api/upload/route.ts`            |
+| 分配演算法        | Round-robin 隨機分配考卷給助教       | `lib/distribution.ts`                |
+
+---
+
+#### 🔲 Phase 5：TA 儀表板 (`feat/ta-dashboard`)
+
+| 項目           | 說明                         | 檔案路徑                             |
+| :------------- | :--------------------------- | :----------------------------------- |
+| 待批改頁面     | 顯示指派給當前 TA 的作業清單 | `app/(dashboard)/my-tasks/page.tsx`  |
+| StatsCard 元件 | 待批改/已完成/總計 統計卡片  | `components/dashboard/StatsCard.tsx` |
+| TaskList 元件  | 待批改作業列表 + 狀態標籤    | `components/dashboard/TaskList.tsx`  |
+
+---
+
+#### 🔲 Phase 6：批改介面 (`feat/grading-interface` + `feat/grading-form`)
+
+| 項目             | 說明                                  | 檔案路徑                              |
+| :--------------- | :------------------------------------ | :------------------------------------ |
+| 批改頁面         | 雙欄佈局：左側預覽、右側評分          | `app/(dashboard)/grade/[id]/page.tsx` |
+| DocxViewer 元件  | 使用 `docx-preview` 渲染 DOCX         | `components/grading/DocxViewer.tsx`   |
+| CodeViewer 元件  | 程式碼高亮顯示 (prism-react-renderer) | `components/grading/CodeViewer.tsx`   |
+| GradingForm 元件 | 各題評分輸入、註解、總分計算          | `components/grading/GradingForm.tsx`  |
+| 評分 API         | 儲存 grades 資料                      | `app/api/grades/route.ts`             |
+| Submissions API  | 取得單一 submission 詳情              | `app/api/submissions/[id]/route.ts`   |
+
+---
+
+#### 🔲 Phase 7：畫記功能 (`feat/annotation-canvas`)
+
+| 項目                  | 說明                             | 檔案路徑                                  |
+| :-------------------- | :------------------------------- | :---------------------------------------- |
+| AnnotationCanvas 元件 | Fabric.js 實作畫記圖層           | `components/grading/AnnotationCanvas.tsx` |
+| 畫記工具列            | 紅筆/藍筆/螢光筆/文字/清除       | 整合於 AnnotationCanvas                   |
+| 畫記儲存              | annotations JSONB 存入 grades 表 | 整合於評分 API                            |
+
+---
+
+#### 🔲 Phase 8：Cppcheck 整合 (`feat/cppcheck-actions` + `feat/question-parser`)
+
+| 項目                    | 說明                            | 檔案路徑                                   |
+| :---------------------- | :------------------------------ | :----------------------------------------- |
+| GitHub Actions 工作流程 | 批量執行 cppcheck 分析          | `.github/workflows/cppcheck.yml`           |
+| 批量分析腳本            | 讀取 pending submissions 並分析 | `scripts/analyze-batch.js`                 |
+| 題號解析器              | 從 DOCX 文字拆分各題程式碼      | `lib/parser.ts`                            |
+| 分析結果 API            | 讀取 analysis_results 表        | `app/api/analysis/[submissionId]/route.ts` |
+
+---
+
+#### 🔲 Phase 9：測試與優化
+
+| 項目       | 說明                                    |
+| :--------- | :-------------------------------------- |
+| 端對端測試 | 使用 Playwright 或 Cypress 測試主要流程 |
+| 效能優化   | 大量資料分頁、虛擬滾動、圖片懶載入      |
+| 錯誤處理   | 統一 error boundary、toast 通知         |
+| 文件補充   | README 使用說明、API 文件               |
 
 ---
 
