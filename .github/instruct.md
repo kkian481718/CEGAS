@@ -136,52 +136,6 @@ CEGAS/
 └── ...
 ```
 
-### 1.1 `.gitignore` 檔案內容
-
-```gitignore
-# Dependencies
-node_modules/
-.pnp/
-.pnp.js
-
-# Build outputs
-.next/
-out/
-build/
-dist/
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Testing
-coverage/
-.nyc_output/
-
-# Vercel
-.vercel
-
-# Temp files
-temp/
-uploads/
-```
-
 ---
 
 ## 2. 使用者驗證與權限 (Authentication & Authorization)
@@ -875,6 +829,8 @@ Settings → Secrets → Actions：
 
 ## 10. 開發順序建議 (Implementation Roadmap)
 
+### 10.1 預估時間
+
 | 階段        | 任務                                          | 預估時間 |
 | :---------- | :-------------------------------------------- | :------- |
 | **Phase 1** | 基礎建設：Next.js + Supabase + Auth           | 1 天     |
@@ -887,7 +843,33 @@ Settings → Secrets → Actions：
 | **Phase 8** | GitHub Actions：Cppcheck 分析                 | 1 天     |
 | **Phase 9** | 測試與優化                                    | 1 天     |
 
-**總計：約 12 天**
+### 10.2 工作分配
+
+#### 開發者 A：基礎建設 + 使用者系統 (~6.5 天)
+
+| 任務                                        | 分支名稱                |
+| :------------------------------------------ | :---------------------- |
+| 專案初始化 (Next.js + Tailwind + shadcn/ui) | `feat/project-init`     |
+| Supabase 設定 + 資料表建立                  | `feat/database-setup`   |
+| 登入/登出功能                               | `feat/auth-login`       |
+| Middleware 權限控制                         | `feat/auth-middleware`  |
+| 助教管理頁面 (CRUD)                         | `feat/user-management`  |
+| 考試/作業建立頁面                           | `feat/assignment-crud`  |
+| GitHub Actions 工作流程                     | `feat/cppcheck-actions` |
+| 題號解析邏輯                                | `feat/question-parser`  |
+
+#### 開發者 B：核心功能 + 批改介面 (~8.5 天)
+
+| 任務                      | 分支名稱                 |
+| :------------------------ | :----------------------- |
+| Dashboard Layout + 側邊欄 | `feat/dashboard-layout`  |
+| 批量上傳頁面 (UI)         | `feat/bulk-upload-ui`    |
+| 上傳 API + 分配演算法     | `feat/upload-api`        |
+| TA 儀表板 (待批改清單)    | `feat/ta-dashboard`      |
+| DOCX 預覽元件             | `feat/docx-viewer`       |
+| 批改介面 (雙欄佈局)       | `feat/grading-interface` |
+| 評分表單 + 儲存           | `feat/grading-form`      |
+| 畫記功能 (Fabric.js)      | `feat/annotation-canvas` |
 
 ---
 
@@ -1046,140 +1028,12 @@ SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 ### 13.3 批量處理流程
 
 `
-
 1. 查詢所有 status='pending' 的 submissions
 2. 批量更新為 status='analyzing'
 3. 逐一執行 cppcheck 分析
 4. 成功則更新為 status='analyzed'
 5. 失敗則改回 status='pending' (下次重試)
    `
-
----
-
-## 14. 雙人協作開發指南 (Team Collaboration)
-
-### 14.1 Git 分支策略
-
-`
-main (保護分支，只接受 PR)
-
-develop (開發主分支)
-
-        feature/auth-system       開發者 A
-
-        feature/grading-system    開發者 B
-
-`
-
-### 14.2 工作分配
-
-#### 開發者 A：基礎建設 + 使用者系統 (~6.5 天)
-
-| 任務                                        | 分支名稱                |
-| :------------------------------------------ | :---------------------- |
-| 專案初始化 (Next.js + Tailwind + shadcn/ui) | `feat/project-init`     |
-| Supabase 設定 + 資料表建立                  | `feat/database-setup`   |
-| 登入/登出功能                               | `feat/auth-login`       |
-| Middleware 權限控制                         | `feat/auth-middleware`  |
-| 助教管理頁面 (CRUD)                         | `feat/user-management`  |
-| 考試/作業建立頁面                           | `feat/assignment-crud`  |
-| GitHub Actions 工作流程                     | `feat/cppcheck-actions` |
-| 題號解析邏輯                                | `feat/question-parser`  |
-
-#### 開發者 B：核心功能 + 批改介面 (~8.5 天)
-
-| 任務                      | 分支名稱                 |
-| :------------------------ | :----------------------- |
-| Dashboard Layout + 側邊欄 | `feat/dashboard-layout`  |
-| 批量上傳頁面 (UI)         | `feat/bulk-upload-ui`    |
-| 上傳 API + 分配演算法     | `feat/upload-api`        |
-| TA 儀表板 (待批改清單)    | `feat/ta-dashboard`      |
-| DOCX 預覽元件             | `feat/docx-viewer`       |
-| 批改介面 (雙欄佈局)       | `feat/grading-interface` |
-| 評分表單 + 儲存           | `feat/grading-form`      |
-| 畫記功能 (Fabric.js)      | `feat/annotation-canvas` |
-
-### 14.3 開發時間軸
-
-`
-Week 1
-
-A: [專案初始化][Supabase][登入][Middleware]
-B: [等 A 完成初始化...][Dashboard][上傳 UI]
-Day 2 後 B 可以開始
-
-Week 2
-
-A: [助教管理][考試建立][Actions]
-B: [上傳 API][儀表板][DOCX 預覽]
-
-Week 3
-
-A: [題號解析][測試]
-B: [批改介面][評分][畫記]
-Day 14 合併 部署
-`
-
-### 14.4 檔案分工 (避免衝突)
-
-`
-app/
-(auth)/ A 負責
-(dashboard)/
-users/ A
-assignments/ A
-upload/ B
-my-tasks/ B
-grade/ B
-api/
-auth/ A
-users/ A
-upload/ B
-analyze/ A
-
-components/
-auth/ A
-dashboard/ B
-grading/ B
-
-lib/
-supabase/ A
-parser.ts A
-distribution.ts B
-`
-
-### 14.5 Git 指令速查
-
-`ash
-
-# A 第一天：建立 develop 分支
-
-git checkout -b develop
-git push -u origin develop
-
-# 建立功能分支
-
-git checkout -b feat/project-init
-
-# 開發完成
-
-git add .
-git commit -m "feat: 初始化專案"
-git push -u origin feat/project-init
-
-# 發 PR 到 develop
-
-# B 第二天：同步並開始
-
-git checkout develop
-git pull
-git checkout -b feat/dashboard-layout
-
-# 如果 develop 有更新
-
-git fetch origin
-git rebase origin/develop
-`
 
 ---
 

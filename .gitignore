@@ -40,3 +40,4 @@ coverage/
 temp/
 uploads/
 
+.env*.local
