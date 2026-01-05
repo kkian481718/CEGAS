@@ -756,28 +756,6 @@ submissions/                    # Bucket 名稱 (設為 private)
 │       └── annotations.json    # 畫記資料
 ```
 
-### 8.3 RLS 政策
-
-```sql
--- 助教只能看到分配給自己的 submissions
-CREATE POLICY "TA can view assigned submissions"
-ON submissions FOR SELECT
-USING (
-    assigned_to = auth.uid()
-    OR
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
-
--- 助教只能編輯分配給自己的評分
-CREATE POLICY "TA can grade assigned submissions"
-ON grades FOR ALL
-USING (
-    graded_by = auth.uid()
-    OR
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
-```
-
 ---
 
 ## 9. 部署指南 (Deployment Guide)
@@ -829,47 +807,49 @@ Settings → Secrets → Actions：
 
 ## 10. 開發順序建議 (Implementation Roadmap)
 
+> **🤖 Agent 提示：** 當你完成某項任務時，請務必回來更新此處表格的「狀態」欄位，將 `⬜` 改為 `✅`。
+
 ### 10.1 預估時間
 
-| 階段        | 任務                                          | 預估時間 |
-| :---------- | :-------------------------------------------- | :------- |
-| **Phase 1** | 基礎建設：Next.js + Supabase + Auth           | 1 天     |
-| **Phase 2** | 使用者系統：登入/登出 + 角色權限 + Middleware | 1 天     |
-| **Phase 3** | Admin 功能：助教管理 + 考試建立               | 1 天     |
-| **Phase 4** | 批量上傳：拖曳上傳 + 助教分配                 | 1.5 天   |
-| **Phase 5** | TA 儀表板：待批改清單 + 統計                  | 1 天     |
-| **Phase 6** | 批改介面：DOCX 預覽 + 評分表單                | 2 天     |
-| **Phase 7** | 畫記功能：Fabric.js Canvas                    | 1.5 天   |
-| **Phase 8** | GitHub Actions：Cppcheck 分析                 | 1 天     |
-| **Phase 9** | 測試與優化                                    | 1 天     |
+| 階段        | 任務                                          | 預估時間 | 狀態 |
+| :---------- | :-------------------------------------------- | :------- | :--- |
+| **Phase 1** | 基礎建設：Next.js + Supabase + Auth           | 1 天     | ✅   |
+| **Phase 2** | 使用者系統：登入/登出 + 角色權限 + Middleware | 1 天     | ⬜   |
+| **Phase 3** | Admin 功能：助教管理 + 考試建立               | 1 天     | ⬜   |
+| **Phase 4** | 批量上傳：拖曳上傳 + 助教分配                 | 1.5 天   | ⬜   |
+| **Phase 5** | TA 儀表板：待批改清單 + 統計                  | 1 天     | ⬜   |
+| **Phase 6** | 批改介面：DOCX 預覽 + 評分表單                | 2 天     | ⬜   |
+| **Phase 7** | 畫記功能：Fabric.js Canvas                    | 1.5 天   | ⬜   |
+| **Phase 8** | GitHub Actions：Cppcheck 分析                 | 1 天     | ⬜   |
+| **Phase 9** | 測試與優化                                    | 1 天     | ⬜   |
 
 ### 10.2 工作分配
 
 #### 開發者 A：基礎建設 + 使用者系統 (~6.5 天)
 
-| 任務                                        | 分支名稱                |
-| :------------------------------------------ | :---------------------- |
-| 專案初始化 (Next.js + Tailwind + shadcn/ui) | `feat/project-init`     |
-| Supabase 設定 + 資料表建立                  | `feat/database-setup`   |
-| 登入/登出功能                               | `feat/auth-login`       |
-| Middleware 權限控制                         | `feat/auth-middleware`  |
-| 助教管理頁面 (CRUD)                         | `feat/user-management`  |
-| 考試/作業建立頁面                           | `feat/assignment-crud`  |
-| GitHub Actions 工作流程                     | `feat/cppcheck-actions` |
-| 題號解析邏輯                                | `feat/question-parser`  |
+| 任務                                        | 分支名稱                | 狀態 |
+| :------------------------------------------ | :---------------------- | :--- |
+| 專案初始化 (Next.js + Tailwind + shadcn/ui) | `feat/project-init`     | ✅   |
+| Supabase 設定 + 資料表建立                  | `feat/database-setup`   | ✅   |
+| 登入/登出功能                               | `feat/auth-login`       | ⬜   |
+| Middleware 權限控制                         | `feat/auth-middleware`  | ⬜   |
+| 助教管理頁面 (CRUD)                         | `feat/user-management`  | ⬜   |
+| 考試/作業建立頁面                           | `feat/assignment-crud`  | ⬜   |
+| GitHub Actions 工作流程                     | `feat/cppcheck-actions` | ⬜   |
+| 題號解析邏輯                                | `feat/question-parser`  | ⬜   |
 
 #### 開發者 B：核心功能 + 批改介面 (~8.5 天)
 
-| 任務                      | 分支名稱                 |
-| :------------------------ | :----------------------- |
-| Dashboard Layout + 側邊欄 | `feat/dashboard-layout`  |
-| 批量上傳頁面 (UI)         | `feat/bulk-upload-ui`    |
-| 上傳 API + 分配演算法     | `feat/upload-api`        |
-| TA 儀表板 (待批改清單)    | `feat/ta-dashboard`      |
-| DOCX 預覽元件             | `feat/docx-viewer`       |
-| 批改介面 (雙欄佈局)       | `feat/grading-interface` |
-| 評分表單 + 儲存           | `feat/grading-form`      |
-| 畫記功能 (Fabric.js)      | `feat/annotation-canvas` |
+| 任務                      | 分支名稱                 | 狀態 |
+| :------------------------ | :----------------------- | :--- |
+| Dashboard Layout + 側邊欄 | `feat/dashboard-layout`  | ⬜   |
+| 批量上傳頁面 (UI)         | `feat/bulk-upload-ui`    | ⬜   |
+| 上傳 API + 分配演算法     | `feat/upload-api`        | ⬜   |
+| TA 儀表板 (待批改清單)    | `feat/ta-dashboard`      | ⬜   |
+| DOCX 預覽元件             | `feat/docx-viewer`       | ⬜   |
+| 批改介面 (雙欄佈局)       | `feat/grading-interface` | ⬜   |
+| 評分表單 + 儲存           | `feat/grading-form`      | ⬜   |
+| 畫記功能 (Fabric.js)      | `feat/annotation-canvas` | ⬜   |
 
 ---
 
@@ -930,7 +910,7 @@ UPDATE assignments SET status = 'archived' WHERE semester < '113-1';
 
 ### 12.2 多重匹配策略
 
-```typescript
+````typescript
 // lib/parser.ts
 
 // 國字數字對照表
@@ -982,9 +962,9 @@ return null;
 
 題目解析警告
 
-學號 411335012 的考卷解析有問題：  
- 預期 5 題，但解析出 4 題  
- 第 3 題解析可信度較低  
+學號 411335012 的考卷解析有問題：
+ 預期 5 題，但解析出 4 題
+ 第 3 題解析可信度較低
  [查看原稿] [手動修正]
 
 `
@@ -1114,7 +1094,7 @@ export function parseDocxContent(
     completeness,
   };
 }
-```
+````
 
 ### 15.3 資料庫欄位擴充
 
