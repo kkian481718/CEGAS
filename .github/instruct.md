@@ -65,15 +65,16 @@ CEGAS/
 │   ├── layout.tsx             # 根布局
 │   ├── page.tsx               # 首頁 (登入頁)
 │   │
-│   ├── (auth)/                # 驗證相關頁面
+│   ├── (auth)/                # 驗證相關頁面 (路由群組)
 │   │   ├── login/
 │   │   │   └── page.tsx       # 登入頁
 │   │   └── callback/
 │   │       └── route.ts       # OAuth callback
 │   │
-│   ├── (dashboard)/           # 需登入的頁面 (共用 layout)
+│   ├── (dashboard)/           # 需登入的頁面 (路由群組，共用 layout)
 │   │   ├── layout.tsx         # Dashboard 布局 (含側邊欄)
-│   │   ├── page.tsx           # 儀表板首頁
+│   │   ├── dashboard/         # /dashboard 路徑
+│   │   │   └── page.tsx       # 儀表板首頁
 │   │   ├── assignments/       # 考試/作業管理 (Admin)
 │   │   │   ├── page.tsx       # 列表
 │   │   │   ├── new/
@@ -814,7 +815,7 @@ Settings → Secrets → Actions：
 | 階段        | 任務                                          | 預估時間 | 狀態 |
 | :---------- | :-------------------------------------------- | :------- | :--- |
 | **Phase 1** | 基礎建設：Next.js + Supabase + Auth           | 1 天     | ✅   |
-| **Phase 2** | 使用者系統：登入/登出 + 角色權限 + Middleware | 1 天     | ⬜   |
+| **Phase 2** | 使用者系統：登入/登出 + 角色權限 + Middleware | 1 天     | ✅   |
 | **Phase 3** | Admin 功能：助教管理 + 考試建立               | 1 天     | ⬜   |
 | **Phase 4** | 批量上傳：拖曳上傳 + 助教分配                 | 1.5 天   | ⬜   |
 | **Phase 5** | TA 儀表板：待批改清單 + 統計                  | 1 天     | ⬜   |
@@ -833,7 +834,7 @@ Settings → Secrets → Actions：
 | Supabase 設定 + 資料表建立                  | `feat/database-setup`   | ✅   |
 | 登入/登出功能                               | `feat/auth-login`       | ✅   |
 | Middleware 權限控制                         | `feat/auth-middleware`  | ✅   |
-| 助教管理頁面 (CRUD)                         | `feat/user-management`  | ⬜   |
+| 助教管理頁面 (CRUD)                         | `feat/user-management`  | ✅   |
 | 考試/作業建立頁面                           | `feat/assignment-crud`  | ⬜   |
 | GitHub Actions 工作流程                     | `feat/cppcheck-actions` | ⬜   |
 | 題號解析邏輯                                | `feat/question-parser`  | ⬜   |
@@ -842,7 +843,7 @@ Settings → Secrets → Actions：
 
 | 任務                      | 分支名稱                 | 狀態 |
 | :------------------------ | :----------------------- | :--- |
-| Dashboard Layout + 側邊欄 | `feat/dashboard-layout`  | ⬜   |
+| Dashboard Layout + 側邊欄 | `feat/dashboard-layout`  | ✅   |
 | 批量上傳頁面 (UI)         | `feat/bulk-upload-ui`    | ⬜   |
 | 上傳 API + 分配演算法     | `feat/upload-api`        | ⬜   |
 | TA 儀表板 (待批改清單)    | `feat/ta-dashboard`      | ⬜   |
